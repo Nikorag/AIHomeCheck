@@ -20,6 +20,8 @@ GEMINI_API_KEY|API Key for Google Generative AI||
 MQTT_BROKER_URL|MQTT Broker URL|mqtt://localhost:1883|
 MQTT_DEVICE_NAME|The name of the device to create in MQTT||
 CUSTOM_PROMPT|The AI Prompt to use|This is 15 minutes of my son's heart rate monitor, While sleeping his heart rate usually sits between 90 and 121. If you see any consistent readings above this range please let me know. Included is also his sleep state readings so please only consider these as worrisome if he is asleep|
+|CRON_SCHEDULE|Cron formatted schedule for polling|Default: `*/15 * * * *`|
+|INTERVAL|Minutes of metrics to pull from Home Assistant|Default: `15`|
 
 ### AI Settings
 

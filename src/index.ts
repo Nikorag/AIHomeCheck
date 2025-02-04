@@ -10,11 +10,14 @@ import { promptStem } from './builder/PromptBuilder';
 import AISensorResult from './model/AISensorResult';
 import nConsole from './logger/NikoragLogger';
 
-const {SENSOR_IDS} = process.env as {SENSOR_IDS : string};
+
+const SENSOR_IDS = process.env.SENSOR_IDS || "";
+const CRON_SCHEDULE = process.env.CRON_SCHEDULE || "*/15 * * * *";
+const INTERVAL = parseInt(process.env.INTERVAL || "15");
 
 const mqttService = new MQTTService(async (service : MQTTService) => {
     processReadings(service);
-    const scheduledJob = cron.schedule('*/15 * * * *', () => {
+    const scheduledJob = cron.schedule(CRON_SCHEDULE, () => {
         processReadings(service);
     });
 });
@@ -25,7 +28,7 @@ async function processReadings(service : MQTTService){
 
         nConsole.info("Getting Readings from Home Assistant");
         const allReadings : HomeAssistantReading[][] = await Promise.all(sensorIds.map(async (sensorId) => {
-            return await getEntityReadings(sensorId, 15);
+            return await getEntityReadings(sensorId, INTERVAL);
         }));
 
         let readings : HomeAssistantReading[] = allReadings.flat();
