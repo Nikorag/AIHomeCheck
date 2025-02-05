@@ -27,12 +27,11 @@ function log(level: keyof Console, ...args : any[]) {
 
 function getCallerFile(): string {
     const err = new Error();
-    const stack = err.stack?.split("\n")[4]; // Adjust index if needed
-
     const allFiles = (err.stack?.split("\n") || [])
         .map((stackLine) => getFileFromStackLine(stackLine));
 
-    return allFiles.find((stackFile) => stackFile && stackFile !== 'NikoragLogger.ts') || 'unknown';
+    const caller = allFiles.find((stackFile) => stackFile && !stackFile.includes('NikoragLogger')) || 'unknown';
+    return caller.replace(/(\.ts|\.js)$/,'');
 }
 
 function getFileFromStackLine(stackLine : string): string | undefined{

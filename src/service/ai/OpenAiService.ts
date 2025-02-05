@@ -1,22 +1,25 @@
 import OpenAI from "openai";
 import AbstractAIService from "./AbstractAIService";
 import nConsole from "../../logger/NikoragLogger";
-
-const apiKey: string | undefined = process.env.OPENAI_API_KEY;
-const model: string = process.env.OPENAI_MODEL || "gpt-4o";
+import { Config } from "../ConfigService";
 
 class OpenAIService extends AbstractAIService {
     openai: OpenAI;
+    apiKey: string;
+    model: string;
 
-    constructor() {
+    constructor(proertyMap: Config) {
         super();
-        this.openai = new OpenAI({ apiKey });
+        this.apiKey = proertyMap.OPENAI_API_KEY;
+        this.model = proertyMap.OPENAI_MODEL || "gpt-4o";
+
+        this.openai = new OpenAI({ apiKey : this.apiKey });
     }
 
     async askQuestion(content: string): Promise<string> {
         try {
             const chatCompletion = await this.openai.chat.completions.create({
-                model,
+                model : this.model,
                 messages: [{ role: "user", content }],
             });
 
@@ -31,4 +34,4 @@ class OpenAIService extends AbstractAIService {
     }
 }
 
-export default new OpenAIService();
+export default OpenAIService;

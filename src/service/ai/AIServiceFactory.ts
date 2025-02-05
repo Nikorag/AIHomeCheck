@@ -1,13 +1,13 @@
+import { Config } from '../ConfigService';
 import AbstractAIService from './AbstractAIService';
 
-const { AI_SERVICE } = process.env as { AI_SERVICE : string };
+export const getAIService = async (propertyMap : Config) : Promise<AbstractAIService> => {
 
-export const getAIService = async () : Promise<AbstractAIService> => {
-    switch (AI_SERVICE) {
+    switch (propertyMap.AI_SERVICE) {
         case 'gemini': 
-            return (await import('./GeminiService')).default;
+            return new (await import('./GeminiService')).default(propertyMap);
         case 'openai':
         default:
-            return (await import('./OpenAiService')).default;    
+            return new (await import('./OpenAiService')).default(propertyMap);    
     }
 }

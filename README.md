@@ -9,48 +9,42 @@ This was my personal use case for the application however I decided to write it 
 
 ## Using AIHomeCheck
 
-To Configure AI Home Check, you need to ensure the following environment variables are set:
+### Run Natively
 
-|Variable|Description|Example|
-|--|--|--|
-HOME_ASSISTANT_URL|URL to your home assistant instance for polling metrics|http://localhost:8123|
-ACCESS_TOKEN|Home Assistant Long Lived Token for polling metrics||
-SENSOR_IDS|Comma separated list of sensor entities to poll|sensor.owlet_baby_care_sock_heart_rate,sensor.owlet_baby_care_sock_sleep_state|
-GEMINI_API_KEY|API Key for Google Generative AI||
-MQTT_BROKER_URL|MQTT Broker URL|mqtt://localhost:1883|
-MQTT_DEVICE_NAME|The name of the device to create in MQTT||
-CUSTOM_PROMPT|The AI Prompt to use|This is 15 minutes of my son's heart rate monitor, While sleeping his heart rate usually sits between 90 and 121. If you see any consistent readings above this range please let me know. Included is also his sleep state readings so please only consider these as worrisome if he is asleep|
-|CRON_SCHEDULE|Cron formatted schedule for polling|Default: `*/15 * * * *`|
-|INTERVAL|Minutes of metrics to pull from Home Assistant|Default: `15`|
-
-### AI Settings
-
-Currently only openai and gemini are supported. the following properties are required for each
-
-|Variables|Description|Example|
-|--|--|--|
-|AI_SERVICE|Which AI Service to use|`openai` or `gemini` - Default: `openai`|
-|OPENAI_API_KEY|API Key for OpenAI||
-|OPENAI_MODEL|Open AI Model to use|Default: `gpt-4o`|
-|GEMINI_API_KEY|API Key for Gemini||
-|GEMINI_MODEL|Gemini AI Model to use|Default: `gemini-1.5-flash`|
-
-You can set these either directly into your shell or into an environment file.
-
-## Run Natively
-
-To run AIHomeCheck, the easiest way is to put your environment variables into a file called `.env` within the directory and run the following commands:
+To run AIHomeCheck, run the following commands:
 
 ```
 npm install
+npm run build
 npm run start
 ```
 
+Once the server is up, browse to http://localhost:3000 to configure
+
+
 ## Run with Docker
 
-To run with Docker, ensure your variables are in a file and run like this:
+To run with Docker, run like this:
 
 ```
 docker build -t aihomecheck .
-docker run -d --name aihomecheck --env-file <env-file> aihomecheck
+docker run -d --name aihomecheck -v ./config:/app/config -p 3000:3000 aihomecheck
 ```
+
+Or using Docker compose
+
+```yaml
+services:
+  aihomecheck:
+    build: .
+    container_name: aihomecheck
+    volumes:
+      - ./config:/app/config
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+```
+
+which can be started with `docker compose up --build`
+
+Once the server is up, browse to http://localhost:3000 to configure, once configured you can recreate the container without exposing 3000 if desired.

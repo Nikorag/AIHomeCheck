@@ -12,5 +12,8 @@ RUN npm install
 
 COPY . .
 
+RUN cd /app/vue-config && npm install
+RUN cd /app && npm run build
+
 # Start the application
 CMD ["npm", "run", "start"]

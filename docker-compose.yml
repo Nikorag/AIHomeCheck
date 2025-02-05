@@ -1,0 +1,9 @@
+services:
+  aihomecheck:
+    build: .
+    container_name: aihomecheck
+    volumes:
+      - ./config:/app/config
+    ports:
+      - "3000:3000"
+    restart: unless-stopped

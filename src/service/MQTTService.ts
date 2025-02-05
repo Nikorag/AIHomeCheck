@@ -2,29 +2,56 @@ import mqtt, { IClientOptions, MqttClient } from "mqtt";
 import { MQTTDevice, MQTTDiscoveryMessage } from "../model/MQTTModels";
 import AISensorResult from "../model/AISensorResult";
 import nConsole from "../logger/NikoragLogger";
-
-const { MQTT_BROKER_URL, MQTT_USERNAME, MQTT_PASSWORD, MQTT_DEVICE_NAME } = process.env as { MQTT_BROKER_URL: string, MQTT_USERNAME: string, MQTT_PASSWORD: string, MQTT_DEVICE_NAME: string };
+import { Config } from "./ConfigService";
 
 export type MQTTConnectionCallback = (service : MQTTService) => void;
+
+export const testMQTT = ({MQTT_BROKER_URL}: Config) : Promise<void> => {
+    return new Promise((resolve, reject) => {
+        const clientId : string = `${Math.random().toString(16).slice(2)}`;
+        
+        const connectionOptions : IClientOptions = { clientId };
+        const testClient =  mqtt.connect(MQTT_BROKER_URL, connectionOptions);
+        
+        testClient.on('connect', () => {
+            resolve();
+        });
+
+        testClient.on('error', (err : any) => {
+           reject(err);
+        });
+    });
+}
 
 export default class MQTTService {
     client : MqttClient;
     binarySensorTopicBase : string;
     textSensorTopicBase : string;
+    deviceName : string;
+    brokerUrl : string;
+    brokerUsername : string;
+    brokerPassword : string;
+    brokerDeviceName : string;
 
-    constructor(connectionCallback : MQTTConnectionCallback){
-        this.binarySensorTopicBase = `homeassistant/binary_sensor/${MQTT_DEVICE_NAME}/status`;
-        this.textSensorTopicBase = `homeassistant/sensor/${MQTT_DEVICE_NAME}/message`;
+    constructor(connectionCallback : MQTTConnectionCallback, propertyMap : Config){
+        this.deviceName = propertyMap.MQTT_DEVICE_NAME;
+        this.brokerUrl = propertyMap.MQTT_BROKER_URL;
+        this.brokerUsername = propertyMap.MQTT_USERNAME;
+        this.brokerPassword = propertyMap.MQTT_PASSWORD;
+        this.brokerDeviceName = propertyMap.MQTT_DEVICE_NAME;
+
+        this.binarySensorTopicBase = `homeassistant/binary_sensor/${this.deviceName}/status`;
+        this.textSensorTopicBase = `homeassistant/sensor/${this.deviceName}/message`;
         
-        const clientId : string = `${MQTT_DEVICE_NAME}_${Math.random().toString(16).slice(2)}`;
+        const clientId : string = `${this.deviceName}_${Math.random().toString(16).slice(2)}`;
         
         const connectionOptions : IClientOptions = { clientId };
-        if (MQTT_PASSWORD) {
-            connectionOptions.username = MQTT_USERNAME;
-            connectionOptions.password = MQTT_PASSWORD;
+        if (this.brokerPassword) {
+            connectionOptions.username = this.brokerUsername;
+            connectionOptions.password = this.brokerPassword;
         }
         
-        this.client = mqtt.connect(MQTT_BROKER_URL, connectionOptions);
+        this.client = mqtt.connect(this.brokerUrl, connectionOptions);
 
         this.client.on('connect', () => {
             nConsole.info('Connected to MQTT broker');
@@ -40,8 +67,8 @@ export default class MQTTService {
 
     publishDiscovery(){
         const device : MQTTDevice = {
-            identifiers: [MQTT_DEVICE_NAME],
-            name: MQTT_DEVICE_NAME,
+            identifiers: [this.deviceName],
+            name: this.deviceName,
             manufacturer: "Nikorag",
             model: "AIHomeCheck"
         }
@@ -51,7 +78,7 @@ export default class MQTTService {
             name: `Status`,
             state_topic: `${this.binarySensorTopicBase}/state`,
             value_template: '{{ value_json.status }}',
-            unique_id: `${MQTT_DEVICE_NAME}_status`,
+            unique_id: `${this.deviceName}_status`,
             device
         };
         this.client.publish(`${this.binarySensorTopicBase}/config`, JSON.stringify(binarySensorDiscoveryMessage), {
@@ -63,7 +90,7 @@ export default class MQTTService {
             name: `Message`,
             state_topic: `${this.textSensorTopicBase}/state`,
             value_template: '{{ value_json.message }}',
-            unique_id: `${MQTT_DEVICE_NAME}_message`,
+            unique_id: `${this.deviceName}_message`,
             device
         };
         this.client.publish(`${this.textSensorTopicBase}/config`, JSON.stringify(textSensorDiscoveryMessage), {
@@ -73,7 +100,6 @@ export default class MQTTService {
 
     publishSensorReadings({status, message} : AISensorResult){
         this.client.publish(`${this.binarySensorTopicBase}/state`, JSON.stringify({ status : status ? 'ON' : 'OFF' }));
-        nConsole.log( JSON.stringify({ message }, null, 2));
         this.client.publish(`${this.textSensorTopicBase}/state`, JSON.stringify({message}));
     }
 }

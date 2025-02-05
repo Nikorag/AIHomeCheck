@@ -4,8 +4,9 @@
   "description": "Create an HA device via MQTT with AI responses to sensor readings",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node src/index.ts",
-    "start": "tsc && node dist/index.js"
+    "build" : "cd vue-config && npm run build",
+    "dev": "ts-node src/App.ts",
+    "start": "tsc && node dist/App.js"
   },
   "repository": {
     "type": "git",
@@ -29,11 +30,15 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
+    "@types/express": "^5.0.0",
     "@types/node-cron": "^3.0.11",
+    "@types/node-persist": "^3.1.8",
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
+    "express": "^4.21.2",
     "mqtt": "^5.10.3",
     "node-cron": "^3.0.3",
+    "node-persist": "^4.0.4",
     "openai": "^4.82.0"
   }
 }

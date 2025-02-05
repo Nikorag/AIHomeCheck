@@ -1,22 +1,23 @@
 import { GenerationConfig, GenerativeModel, GoogleGenerativeAI } from "@google/generative-ai";
 import AbstractAIService from "./AbstractAIService";
 import nConsole from "../../logger/NikoragLogger";
-
-const GEMINI_API_KEY : string | undefined = process.env.GEMINI_API_KEY;
-const model : string = process.env.GEMINI_MODEL || "gemini-1.5-flash"
+import { Config } from "../ConfigService";
 
 class GeminiService extends AbstractAIService {
     genAI : GoogleGenerativeAI;
     model : GenerativeModel;
     generationConfig : GenerationConfig;
+    geminiApiKey : string;
 
-    constructor() {
+    constructor(propertyMap : Config) {
         super();
-        if (GEMINI_API_KEY && GEMINI_API_KEY !== ""){
-            this.genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+        this.geminiApiKey = propertyMap.GEMINI_API_KEY;
+        const modelName : string = propertyMap.GEMINI_MODEL || "gemini-1.5-flash";
+        if (this.geminiApiKey && this.geminiApiKey !== ""){
+            this.genAI = new GoogleGenerativeAI(this.geminiApiKey);
 
             this.model = this.genAI.getGenerativeModel({
-                model
+                model : modelName
             });
 
             this.generationConfig = {
@@ -44,4 +45,4 @@ class GeminiService extends AbstractAIService {
     }
 }
 
-export default new GeminiService();
+export default GeminiService;
